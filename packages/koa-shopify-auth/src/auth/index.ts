@@ -7,6 +7,8 @@ import createEnableCookies from './create-enable-cookies';
 import createEnableCookiesRedirect from './create-enable-cookies-redirect';
 import createTopLevelOAuthRedirect from './create-top-level-oauth-redirect';
 
+import path from 'path';
+
 const DEFAULT_MYSHOPIFY_DOMAIN = 'myshopify.com';
 const DEFAULT_ACCESS_MODE: AccessMode = 'online';
 
@@ -46,30 +48,30 @@ export default function createShopifyAuth(options: OAuthStartOptions) {
   const enableCookiesRedirect = createEnableCookiesRedirect(enableCookiesPath);
 
   return async function shopifyAuth(ctx: Context, next: NextFunction) {
-    if (ctx.path === oAuthStartPath && !hasCookieAccess(ctx)) {
+    if (ctx.path === path.normalize(oAuthStartPath) && !hasCookieAccess(ctx)) {
       await enableCookiesRedirect(ctx);
       return;
     }
 
     if (
-      ctx.path === inlineOAuthPath ||
-      (ctx.path === oAuthStartPath && shouldPerformInlineOAuth(ctx))
+      ctx.path === path.normalize(inlineOAuthPath) ||
+      (ctx.path === path.normalize(oAuthStartPath) && shouldPerformInlineOAuth(ctx))
     ) {
       await oAuthStart(ctx);
       return;
     }
 
-    if (ctx.path === oAuthStartPath) {
+    if (ctx.path === path.normalize(oAuthStartPath)) {
       await topLevelOAuthRedirect(ctx);
       return;
     }
 
-    if (ctx.path === oAuthCallbackPath) {
+    if (ctx.path === path.normalize(oAuthCallbackPath)) {
       await oAuthCallback(ctx);
       return;
     }
 
-    if (ctx.path === enableCookiesPath) {
+    if (ctx.path === path.normalize(enableCookiesPath)) {
       await enableCookies(ctx);
       return;
     }
